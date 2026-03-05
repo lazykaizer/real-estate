@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    --primary: 214 80% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 78% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 0 0% 36%;
+    --accent: 174 100% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 214 80% 42%;
+    --chart-1: 214 80% 42%;
+    --chart-2: 122 46% 34%;
+    --chart-3: 174 100% 20%;
+    --chart-4: 213 78% 20%;
+    --chart-5: 122 46% 20%;
+    --radius: 0.75rem;
+
+    /* Custom design tokens */
+    --shadow-card: 0 2px 12px rgba(10, 46, 92, 0.08);
+    --shadow-card-hover: 0 8px 32px rgba(10, 46, 92, 0.16);
+    --shadow-modal: 0 24px 64px rgba(10, 46, 92, 0.24);
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 350ms ease;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Mapbox overrides */
+.mapboxgl-popup-content {
+  border-radius: 12px !important;
+  padding: 16px !important;
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+/* Price marker on map */
+.price-marker {
+  background: #1565c0;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 150ms ease;
+}
+.price-marker:hover {
+  transform: scale(1.1);
+}
