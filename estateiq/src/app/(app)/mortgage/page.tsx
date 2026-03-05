@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Calculator, TrendingUp, PiggyBank, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -445,7 +446,7 @@ export default function MortgagePage() {
                   asChild
                   className="w-full bg-blue hover:bg-blue/90 text-white"
                 >
-                  <a href="/buy">Search Homes in Your Budget</a>
+                  <Link href="/buy">Search Homes in Your Budget</Link>
                 </Button>
               </div>
             </div>
