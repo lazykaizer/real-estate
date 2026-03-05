@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd estateiq && npm run build",
-  "outputDirectory": "estateiq/.next",
-  "installCommand": "cd estateiq && npm install",
-  "framework": "nextjs"
-}
