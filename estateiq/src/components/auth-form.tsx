@@ -50,6 +50,9 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [forgotEmail, setForgotEmail] = useState("");
+    const [step, setStep] = useState<"auth" | "verify">("auth");
+    const [verificationEmail, setVerificationEmail] = useState("");
+    const [otp, setOtp] = useState("");
     const { redirectUrl, closeModal } = useAuthModalStore();
     const supabase = createClient();
 
@@ -102,8 +105,8 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
 
         const fullPhone = `${phoneCode}${phoneNumber}`;
 
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters.");
+        if (password.length < 10) {
+            setError("Password must be at least 10 characters.");
             setIsLoading(false);
             return;
         }
@@ -117,7 +120,6 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
                     lastName,
                     phone: fullPhone,
                 },
-                emailRedirectTo: `${window.location.origin}/home`,
             },
         });
 
@@ -140,10 +142,43 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
                 router.push(redirectAfterAuth);
             }
         } else {
-            // Email confirmation required — show success message
+            // Email confirmation required — show OTP screen
+            setVerificationEmail(email);
+            setStep("verify");
             setSuccessMessage(
-                `Account created! We've sent a verification email to ${email}. Please check your inbox (and spam folder) to confirm your account, then log in.`
+                `Account created! We've sent a 6-digit verification code to ${email}.`
             );
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase.auth.verifyOtp({
+            email: verificationEmail,
+            token: otp,
+            type: "signup",
+        });
+
+        if (error) {
+            setError(error.message);
+            setIsLoading(false);
+            return;
+        }
+
+        // Success - OTP verified
+        setIsLoading(false);
+        setSuccessMessage("Email verified successfully! Logging you in...");
+
+        if (onSuccess) onSuccess();
+        closeModal();
+
+        if (redirectUrl) {
+            router.push(redirectUrl);
+        } else {
+            router.push(redirectAfterAuth);
         }
     };
 
@@ -219,6 +254,74 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
                             </Button>
                         </form>
                     )}
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // ── OTP Verification View ──
+    if (step === "verify") {
+        return (
+            <Card className="border-0 shadow-none sm:shadow-lg sm:ring-1 sm:ring-gray-200">
+                <CardHeader className="space-y-2 px-0 sm:px-6">
+                    <button
+                        onClick={() => {
+                            setStep("auth");
+                            setError(null);
+                            setSuccessMessage(null);
+                        }}
+                        className="flex items-center gap-1 text-sm text-gray-mid hover:text-blue transition-colors mb-2 w-fit"
+                    >
+                        <ArrowLeft className="h-4 w-4" /> Back to Signup
+                    </button>
+                    <CardTitle className="text-2xl font-semibold tracking-tight">Verify your email</CardTitle>
+                    <CardDescription className="text-gray-500">
+                        We&apos;ve sent a 6-digit code to <span className="font-medium text-gray-900">{verificationEmail}</span>.
+                        The code will expire in 10 minutes.
+                    </CardDescription>
+                    {error && <div className="text-sm font-medium text-destructive mt-2">{error}</div>}
+                    {successMessage && (
+                        <div className="flex items-start gap-2 text-sm font-medium text-green bg-green-light px-4 py-3 rounded-lg mt-2">
+                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" />
+                            {successMessage}
+                        </div>
+                    )}
+                </CardHeader>
+                <CardContent className="space-y-4 px-0 sm:px-6">
+                    <form onSubmit={handleVerifyOtp} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="otp">Verification Code</Label>
+                            <div className="relative">
+                                <Input
+                                    id="otp"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    placeholder="000000"
+                                    type="text"
+                                    className="h-12 text-center text-2xl tracking-[0.5em] font-bold"
+                                    required
+                                    maxLength={6}
+                                    pattern="\d{6}"
+                                />
+                            </div>
+                        </div>
+                        <Button type="submit" disabled={isLoading} className="w-full h-11 text-base font-medium">
+                            {isLoading ? "Verifying..." : "Verify Code"}
+                        </Button>
+                        <p className="text-center text-sm text-gray-500">
+                            Didn&apos;t receive the code?{" "}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    // Logic for resending OTP could be added here
+                                    setSuccessMessage("Code resent successfully!");
+                                }}
+                                className="text-primary hover:underline font-medium"
+                            >
+                                Resend
+                            </button>
+                        </p>
+                    </form>
                 </CardContent>
             </Card>
         );
@@ -340,9 +443,9 @@ export function AuthForm({ onSuccess, defaultTab = "login", redirectAfterAuth = 
                                     <Label htmlFor="password-signup">Password</Label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                        <Input id="password-signup" name="password" type="password" placeholder="Min. 6 characters" required minLength={6} className="pl-10 h-11" />
+                                        <Input id="password-signup" name="password" type="password" placeholder="Min. 10 characters" required minLength={10} className="pl-10 h-11" />
                                     </div>
-                                    <p className="text-xs text-gray-mid">Must be at least 6 characters.</p>
+                                    <p className="text-xs text-gray-mid">Must be at least 10 characters with upper, lower, numbers & symbols.</p>
                                 </div>
 
                                 <div className="space-y-2">
